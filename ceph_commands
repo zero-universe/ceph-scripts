@@ -1,0 +1,91 @@
+http://download.ceph.com/tarballs/
+
+http://docs.ceph.com/docs/master/man/8/ceph/
+
+
+# show version
+ceph version
+
+
+# status
+ceph -s
+
+
+# health
+ceph -w
+
+
+#  If you do not want CRUSH to automatically rebalance the cluster as you stop OSDs for maintenance, set the cluster to noout first
+ceph osd set noout
+ceph osd unset noout
+
+
+# list pools
+ceph osd lspools
+
+
+# disk usage
+ceph df
+
+
+# summarizes mds status
+ceph mds stat -f json-pretty
+
+
+# status of monitors
+ceph mon_status -f json-pretty
+
+
+# dump monitor state
+ceph mon dump
+
+
+# show osd tree
+ceph osd tree
+
+
+# lsit crush rule
+ceph osd crush rule list -f json-pretty
+ceph osd crush rule ls -f json-pretty
+
+
+#shows current crush tunables
+ceph osd crush show-tunables -f json-pretty
+
+
+# shows the crush buckets and items in a tree view
+ceph osd crush tree -f json-pretty
+
+
+# sets crush tunables values to <profile>
+ceph osd crush tunables legacy|argonaut|bobtail|firefly|hammer|optimal|default
+
+
+# df shows OSD utilization
+ceph osd df {plain|tree}
+
+
+# get runtime config
+# ceph daemon {daemon-type}.{id} config show | less
+ceph daemon mon.cephconf01fra config show
+
+
+# inject config
+ceph tell {daemon-type}.{id or *} injectargs --{name} {value} [--{name} {value}]
+ceph tell osd.0 injectargs --debug-osd 20 --debug-ms 1
+
+
+
+
+
+
+http://docs.ceph.com/docs/master/rados/operations/crush-map/#warning-when-tunables-are-non-optimal
+
+# if tunables are not optimal, ceph will complain ...
+ceph osd crush tunables optimal
+ceph osd crush tunables legacy
+
+
+
+
+
