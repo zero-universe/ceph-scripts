@@ -40,7 +40,6 @@ mkdir -p /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}
 # ?? ceph-authtool --create-keyring cephorium.mon.keyring --gen-key -n mon.$(hostname -s) --cap mon 'allow *'
 
 # create mon keys
-#ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring /var/lib/ceph/mon/${CLUSTER_NAME}-${INMON}/keyring
 ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring ${MON_KEYRING} --monmap monmap
 
 
@@ -52,14 +51,10 @@ cp ${MON_KEYRING} /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}/keyring
 # change owner-ship
 chown -R ceph. /var/lib/ceph
 
-# restart key-gen
-#systemctl restart ceph-create-keys@${LMON}.service
 
 # copy unit-files and replace clustername
-cp ${UNITDIR}${CMUNITF} ${MYUNITDIR}
-cp ${UNITDIR}${CKUNITF} ${MYUNITDIR}
-sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${MYUNITDIR}${CMUNITF} 
-sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${MYUNITDIR}${CKUNITF} 
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CKUNITF} 
 
 systemctl daemon-reload
 

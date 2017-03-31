@@ -88,4 +88,6 @@ ceph osd crush tunables legacy
 
 
 
-
+# remove host from bucket
+# ceph osd crush remove {bucket-name}
+ceph --cluster ceph-test -c /etc/ceph/ceph-test.conf osd crush remove $(hostname -s)

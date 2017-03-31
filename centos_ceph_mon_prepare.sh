@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
@@ -22,6 +22,9 @@ cd ${CPWD}
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 MON_KEYRING="/etc/ceph/${CLUSTER_NAME}.mon.keyring"
 
+CMUNITF="ceph-mon@.service"
+CKUNITF="ceph-create-keys@.service"
+UNITDIR="/usr/lib/systemd/system/"
 
 ### create config file and fill it
 > ${CLUSTER_CONF}
@@ -50,13 +53,15 @@ echo "osd pool default pg num = 1024" >> ${CLUSTER_CONF}
 echo "osd pool default pgp num = 1024" >> ${CLUSTER_CONF}
 echo "osd crush chooseleaf type = 1" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
+echo "[mon.${LMON}]" >> ${CLUSTER_CONF}
+echo "host = ${LMON}" >> ${CLUSTER_CONF}
+echo "mon path = /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}" >> ${CLUSTER_CONF}
+echo -n -e "\n" >> ${CLUSTER_CONF}
 
 echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
 
 # Create a keyring for your cluster and generate a monitor secret key
 ceph-authtool --create-keyring ${CLUSTER_NAME}.mon.keyring --gen-key -n mon. --cap mon 'allow *'
-#ceph-authtool --create-keyring ${CLUSTER_NAME}.mon.keyring --gen-key -n mon.$(echo $AMON | awk 'BEGIN {FS=","} {print $1}') --cap mon 'allow *'
-#ceph-authtool -C ${CLUSTER_NAME}.mon.keyring --gen-key -n mon.$(echo $AMON | awk 'BEGIN {FS=","} {print $1}') --cap mon 'allow *'
 
 
 # Generate an administrator keyring, generate a client.admin user and add the user to the keyring.
@@ -72,19 +77,14 @@ mkdir -p /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}
 
 
 # create mon keys
-#ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring /var/lib/ceph/mon/${CLUSTER_NAME}-${INMON}/keyring
 ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring ${MON_KEYRING}
 
 
 # Generate a monitor map using the hostname(s), host IP address(es) and the FSID. Save it as monmap
-#monmaptool --create --add ${LMON} ${MIP}:6789 --fsid ${FSID} monmap
 #monmaptool  --create  --add  mon.a 192.168.0.10:6789 --add mon.b 192.168.0.11:6789 --add mon.c 192.168.0.12:6789 --clobber monmap
-#monmaptool --create --add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 monmap
 monmaptool --create --add $(echo $AMON | awk 'BEGIN {FS=","} {print $1}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $1	}'):6789 \
 --add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 \
 --add $(echo $AMON | awk 'BEGIN {FS=","} {print $3}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $3}'):6789 monmap
-#monmaptool --add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 monmap
-#monmaptool --add $(echo $AMON | awk 'BEGIN {FS=","} {print $3}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $3}'):6789 monmap
 
 # schlitzer-edition:
 #monmaptool --create $MON_MAP_HOSTS --fsid $FSID /tmp/monmap
@@ -95,6 +95,16 @@ cp ${MON_KEYRING} /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}/keyring
 
 # change owner-ship
 chown -R ceph. /var/lib/ceph
+
+# copy unit-files and replace clustername
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CKUNITF} 
+
+systemctl daemon-reload
+
+systemctl restart ceph-create-keys@${LMON}.service
+systemctl start ceph-mon@${LMON}.service
+systemctl enable ceph-mon@${LMON}.service
 
 # distribute the keys
 echo "rsyncing keys"

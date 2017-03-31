@@ -13,4 +13,21 @@ ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add-bucket $(hostnam
 ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush move $(hostname -s) root=default
 
 
+echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+
+
+# set systemd files
+
+COUNITF="ceph-osd@.service"
+CKUNITF="ceph-create-keys@.service"
+UNITDIR="/usr/lib/systemd/system/"
+
+
+# copy unit-files and replace clustername
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${COUNITF} 
+sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CKUNITF}
+
+systemctl daemon-reload
+
+
 exit 0
