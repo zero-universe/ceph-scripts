@@ -1,6 +1,12 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
+
+if [ $# -ne 3 ]; then
+	echo "Usage: $0 <cluster_name> <hdd_for_ceph_data> <mountpoint_for_ceph_journal>" 
+	echo "Example: $0 ceph-test sdc /mnt/sdb"
+	exit 1
+fi
 
 LMON=$(hostname -s)
 CUSER=ceph
@@ -10,14 +16,12 @@ CGROUP=ceph
 CPWD="/etc/ceph"
 cd ${CPWD}
 
-#echo "what's the data partition: "
-#read DATAPART
+CLUSTER_NAME=$1
 
-echo "where will the journal be saved: "
-read JOURNALPOINT
+#DATAPART=$2
+CDISK=$2
 
-echo "what's the cluster's name: "
-read CLUSTER_NAME
+JOURNALPOINT=$3
 
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
@@ -30,18 +34,14 @@ OSD_ID=$(ceph -c ${CLUSTER_CONF} --cluster ${CLUSTER_NAME} osd create) && echo $
 
 # Create the default directories
 mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
-#mkdir -p ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal
 
 # prepare hdd
-echo "which (h|v)dd should be prepared ?"
-read CDISK
 sgdisk -z /dev/${CDISK}
 parted /dev/${CDISK} --script -- mklabel gpt
 parted /dev/${CDISK} --script -- mkpart primary xfs 0 -1
-#parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${OSD_ID}
+parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${OSD_ID}
 
 # format and mount hdd
-#mkfs.xfs -f -L "${CLUSTER_NAME}-${OSD_ID}" /dev/${DATAPART}
 mkfs.xfs -f -L "osd${OSD_ID}" /dev/${CDISK}1
 
 # put it into fstab
@@ -58,21 +58,14 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 mount -a
 chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
-#systemctl restart ceph-create-keys@${LMON}.service
-
 # create keyring
-#ceph-osd -c ${CLUSTER_CONF} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey --osd-uuid ${OSD_UID}
 ceph-osd --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
-
-#ceph-osd -c ${CLUSTER_CONF} -i ${OSD_ID} --mkfs --mkkey
-#ceph-osd -i 0 --mkfs --mkkey --osd-uuid 1ee9e4c0-c962-4453-abd5-b2329896bb42
 
 # add osd to cluster
 ceph -c ${CLUSTER_CONF} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
-#ceph auth add osd.0 osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/ceph-0/keyring
 
+# set weight to 1.0
 ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add osd.${OSD_ID} 1.0 host=$(hostname -s)
-#ceph --cluster ceph osd crush add osd.0 1.0 host=$(hostname -s)
 
 systemctl enable ceph-osd@${OSD_ID}.service
 systemctl start ceph-osd@${OSD_ID}.service

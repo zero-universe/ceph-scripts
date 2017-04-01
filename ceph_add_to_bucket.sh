@@ -1,19 +1,23 @@
 #!/bin/bash 
 
+
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 <cluster_name>" 
+	echo "Example: $0 ceph-test"
+	exit 1
+fi
+
+
 # go to ceph config dir
 CPWD="/etc/ceph"
 cd ${CPWD}
 
-echo "what's the cluster's name: "
-read CLUSTER_NAME
+CLUSTER_NAME=$1
 
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 
 ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add-bucket $(hostname -s) host
 ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush move $(hostname -s) root=default
-
-
-echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
 
 
 # set systemd files

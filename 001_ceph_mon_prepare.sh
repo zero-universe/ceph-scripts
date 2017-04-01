@@ -2,18 +2,25 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+if [ $# -ne 4 ]; then
+	echo "Usage: $0 <cluster_name> <subnet> <mons_hostname> <mons_ip>" 
+	echo "Example: $0 ceph-test 10.0.0.0/8 server01,server02 10.0.0.1,10.0.0.2"
+	exit 1
+fi
+
 LMON=$(hostname -s)
-echo "what is the cluster's subnet: "
-read SUBNET
 
-echo "list all hostnames of the initial mons, seperator is a coma:"
-read AMON
+# cluster_name
+CLUSTER_NAME=$1
 
-echo "list all ip of the initial mons, seperator is a coma:"
-read AMIP
+# pub subnet
+SUBNET=$2
 
-echo "what's the cluster's name: "
-read CLUSTER_NAME
+# initial mons
+AMON=$3
+
+# ips of the initial mons
+AMIP=$4
 
 # go to ceph config dir
 CPWD="/etc/ceph"
@@ -40,25 +47,26 @@ echo "mon initial members = ${AMON}" >> ${CLUSTER_CONF}
 echo "mon host = ${AMIP}" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 echo "public network = ${SUBNET}" >> ${CLUSTER_CONF}
-#echo "cluster network = ${SUBNET}" >> ${CLUSTER_CONF}
+#echo "cluster network = ${PSUBNET}" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 echo "auth cluster required = cephx" >> ${CLUSTER_CONF}
 echo "auth service required = cephx" >> ${CLUSTER_CONF}
 echo "auth client required = cephx" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
-echo "#osd journal size = 1024" >> ${CLUSTER_CONF}
+echo "osd journal size = 1024" >> ${CLUSTER_CONF}
 echo "osd pool default size = 2" >> ${CLUSTER_CONF}
 echo "osd pool default min size = 1" >> ${CLUSTER_CONF}
 echo "osd pool default pg num = 1024" >> ${CLUSTER_CONF}
 echo "osd pool default pgp num = 1024" >> ${CLUSTER_CONF}
 echo "osd crush chooseleaf type = 1" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
-echo "[mon.${LMON}]" >> ${CLUSTER_CONF}
-echo "host = ${LMON}" >> ${CLUSTER_CONF}
-echo "mon path = /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}" >> ${CLUSTER_CONF}
-echo -n -e "\n" >> ${CLUSTER_CONF}
 
-echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+
+
+if [ -d /etc/sysconfig ]; then
+	echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+fi
+
 
 # Create a keyring for your cluster and generate a monitor secret key
 ceph-authtool --create-keyring ${CLUSTER_NAME}.mon.keyring --gen-key -n mon. --cap mon 'allow *'
@@ -86,15 +94,15 @@ monmaptool --create --add $(echo $AMON | awk 'BEGIN {FS=","} {print $1}') $(echo
 --add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 \
 --add $(echo $AMON | awk 'BEGIN {FS=","} {print $3}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $3}'):6789 monmap
 
-# schlitzer-edition:
-#monmaptool --create $MON_MAP_HOSTS --fsid $FSID /tmp/monmap
 
 # Mark that the monitor is created and ready to be started
 > /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}/done
 cp ${MON_KEYRING} /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}/keyring
 
+
 # change owner-ship
 chown -R ceph. /var/lib/ceph
+
 
 # copy unit-files and replace clustername
 sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
@@ -106,11 +114,20 @@ systemctl restart ceph-create-keys@${LMON}.service
 systemctl start ceph-mon@${LMON}.service
 systemctl enable ceph-mon@${LMON}.service
 
+
 # distribute the keys
 echo "rsyncing keys"
 for i in $(echo ${AMON} | tr ',' ' '); do
 	rsync -a ${CPWD} ${i}:/etc/
 done	
+
+
+# append host specific part to config must not be rsynced !
+echo "[mon.${LMON}]" >> ${CLUSTER_CONF}
+echo "host = ${LMON}" >> ${CLUSTER_CONF}
+echo "mon path = /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}" >> ${CLUSTER_CONF}
+echo -n -e "\n" >> ${CLUSTER_CONF}
+
 
 
 exit 0

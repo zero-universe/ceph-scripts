@@ -2,14 +2,19 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 <cluster_name>" 
+	echo "Example: $0 ceph-test"
+	exit 1
+fi
+
 LMON=$(hostname -s)
 
 # go to ceph config dir
 CPWD="/etc/ceph"
 cd ${CPWD}
 
-echo "what's the cluster's name: "
-read CLUSTER_NAME
+CLUSTER_NAME=$1
 
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
@@ -24,7 +29,10 @@ MYUNITDIR="/etc/systemd/system/"
 CLUSTER_FSID=$(grep fsid ${CLUSTER_CONF} | cut -d " " -f3)
 echo ${CLUSTER_FSID}
 
-echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+if [ -d /etc/sysconfig ]; then
+	echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+fi
+
 
 ### fill config
 
@@ -36,8 +44,6 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 
 # Create a default data directory (or directories) on the monitor host
 mkdir -p /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}
-
-# ?? ceph-authtool --create-keyring cephorium.mon.keyring --gen-key -n mon.$(hostname -s) --cap mon 'allow *'
 
 # create mon keys
 ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring ${MON_KEYRING} --monmap monmap
