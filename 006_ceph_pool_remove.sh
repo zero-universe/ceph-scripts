@@ -2,7 +2,7 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
 	echo "Usage: $0 <cluster_name>" 
 	echo "Example: $0 ceph-test"
 	exit 1
@@ -21,7 +21,7 @@ echo "this script removes a ceph pool"
 
 
 # list pools
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd lspool -f json-pretty
+ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd lspools -f json-pretty
 
 echo "which pool od you intend to delete ?"
 echo "just give the poolname"
@@ -29,7 +29,7 @@ read POOL_NAME
 
 
 # remove pool
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd delete ${POOL_NAME} ${POOL_NAME} --yes-i-really-really-mean-it
+ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd pool delete ${POOL_NAME} ${POOL_NAME} --yes-i-really-really-mean-it
 
 
 # list pools again

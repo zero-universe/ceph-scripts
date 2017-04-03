@@ -13,7 +13,7 @@ FS_NAME=$2
 METADATA_POOL=$3
 DATA_POOL=$4
 
-
+CPWD="/etc/ceph"
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 

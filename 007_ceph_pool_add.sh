@@ -49,7 +49,7 @@ ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd pool create ${POOL_NAME} $
 
 
 # list pools
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd lspool -f json-pretty
+ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd lspools -f json-pretty
 
 
 

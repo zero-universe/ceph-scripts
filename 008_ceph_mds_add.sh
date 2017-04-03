@@ -30,11 +30,11 @@ ceph-authtool --create-keyring /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
 
 
 # import keyring and set caps
-ceph auth add mds.${LMON} osd "allow rwx" mds "allow" mon "allow profile mds" -i /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
+ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} auth add mds.${LMON} osd "allow rwx" mds "allow" mon "allow profile mds" -i /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
 
 
 # add to config
-echo "[mds.{id}]" >> ${CLUSTER_CONF}
+echo "[mds.${LMON}]" >> ${CLUSTER_CONF}
 echo "host = ${LMON}" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
