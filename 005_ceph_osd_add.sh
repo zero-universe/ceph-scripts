@@ -2,6 +2,12 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
+
 if [ $# -ne 3 ]; then
 	echo "Usage: $0 <cluster_name> <hdd_for_ceph_data> <mountpoint_for_ceph_journal>" 
 	echo "Example: $0 ceph-test sdc /mnt/sdb"
@@ -46,7 +52,9 @@ mkfs.xfs -f -L "osd${OSD_ID}" /dev/${CDISK}1
 
 # put it into fstab
 #echo "/dev/${CDISK}1	/var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
+echo "# /dev/${CDISK}" >> /etc/fstab
 echo "UUID=$(blkid /dev/${CDISK}1 | grep UUID | cut -d '"' -f4) /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
+echo -n -e "\n" >> /etc/fstab
 
 # append to config
 echo "[osd.${OSD_ID}]" >> ${CLUSTER_CONF}

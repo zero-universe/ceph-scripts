@@ -1,5 +1,10 @@
 #!/bin/bash 
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
 
 if [ $# -ne 1 ]; then
 	echo "Usage: $0 <cluster_name>" 

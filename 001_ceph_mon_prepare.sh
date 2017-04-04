@@ -2,6 +2,12 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
+
 if [ $# -ne 4 ]; then
 	echo "Usage: $0 <cluster_name> <subnet> <mons_hostname> <mons_ip>" 
 	echo "Example: $0 ceph-test 10.0.0.0/8 server01,server02 10.0.0.1,10.0.0.2"

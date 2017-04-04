@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
 
 
 if [ $# -ne 2 ]; then
@@ -44,6 +48,8 @@ ceph -c ${CLUSTER_CONF} auth del osd.${OSD_ID}
 ceph -c ${CLUSTER_CONF} osd rm ${OSD_ID}
 
 rm -rf /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
+
+echo "remove entries from /etc/fstab and ${CPWD}/${CLUSTER_NAME}.conf"
 
 exit 0
 

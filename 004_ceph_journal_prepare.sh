@@ -1,5 +1,11 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
+
 if [ $# -ne 3 ]; then
 	echo "Usage: $0 <cluster_name> <hdd_for_ceph_journal> <mount_point_of_journal_hdd>" 
 	echo "Example: $0 ceph-test sdc /mnt/sdc"
@@ -30,7 +36,9 @@ parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${CDISK}
 mkfs.xfs -f -L "jon${CDISK}" /dev/${CDISK}1
 
 # put it into fstab
+echo "# /dev/${CDISK}" >> /etc/fstab
 echo "UUID=$(blkid /dev/${CDISK}1 | grep UUID | cut -d '"' -f4) ${MOUNTPOINT}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
+echo -n -e "\n" >> /etc/fstab
 
 # mount new journal device and set rights
 mount -a

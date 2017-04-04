@@ -2,6 +2,12 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
+
 if [ $# -ne 1 ]; then
 	echo "Usage: $0 <cluster_name>" 
 	echo "Example: $0 ceph-test"
