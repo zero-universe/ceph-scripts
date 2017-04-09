@@ -1,5 +1,10 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+set -o noclobber
+set -o noglob
+
 if [ $# -ne 2 ]; then
 	echo "Usage: $0 <cluster_name> <name_of_crushmap_file>" 
 	echo "Example: $0 ceph-test crush_map_file"
