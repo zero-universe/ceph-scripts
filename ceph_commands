@@ -16,9 +16,10 @@ ceph -w
 
 
 #  If you do not want CRUSH to automatically rebalance the cluster as you stop OSDs for maintenance, set the cluster to noout first
+#  ( more flags to set: full|pause|noup|nodown|noout|noin|nobackfill|norebalance|norecover|noscrub|nodeep-scrub|notieragent|sortbitwise|require_jewel_osds )
 ceph osd set noout
 ceph osd unset noout
-
+ 
 
 # list pools
 ceph osd lspools
