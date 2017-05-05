@@ -49,6 +49,8 @@ ceph -c ${CLUSTER_CONF} osd rm ${OSD_ID}
 
 rm -rf /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
+# sed -i "/${CLUSTER_NAME}-${OSD_ID}/d" /etc/fstab
+
 echo "remove entries from /etc/fstab and ${CPWD}/${CLUSTER_NAME}.conf"
 
 exit 0
