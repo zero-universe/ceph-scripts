@@ -16,22 +16,26 @@ CLUSTER_NAME=$1
 CDISK=$2
 MOUNTPOINT=$3
 
-CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
-
 # go to ceph config dir
 CPWD="/etc/ceph"
 cd ${CPWD}
+
+CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
+MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 # create mount point
 mkdir -p ${MOUNTPOINT}
 
 # prepare hdd
 sgdisk -z /dev/${CDISK}
+sleep 1
 parted /dev/${CDISK} --script -- mklabel gpt
+sleep 1
 #parted /dev/${CDISK} --script -- mkpart primary xfs 0 -1
 parted /dev/${CDISK} --script -- mkpart primary xfs 0% 100%
+sleep 1
 parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${CDISK}
+sleep 1
 
 # format and mount hdd
 mkfs.xfs -f -L "jon${CDISK}" /dev/${CDISK}1

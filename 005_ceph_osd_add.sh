@@ -43,10 +43,14 @@ mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 # prepare hdd
 sgdisk -z /dev/${CDISK}
+sleep 1
 parted /dev/${CDISK} --script -- mklabel gpt
+sleep 1
 #parted  /dev/${CDISK} --script -- mkpart primary xfs 0 -1
 parted /dev/${CDISK} --script -- mkpart primary xfs 0% 100%
-parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${OSD_ID}
+sleep 1
+parted /dev/${CDISK} --script -- name 1 data-for-${CLUSTER_NAME}-${OSD_ID}
+sleep 1
 
 # format and mount hdd
 mkfs.xfs -f -L "osd${OSD_ID}" /dev/${CDISK}1
@@ -74,7 +78,7 @@ ceph-osd --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} --setuser ceph --setgroup 
 ceph -c ${CLUSTER_CONF} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
 
 # set weight to 1.0
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add osd.${OSD_ID} 1.0 host=$(hostname -s)
+ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add osd.${OSD_ID} 1.0 host=${LMON}
 
 systemctl enable ceph-osd@${OSD_ID}.service
 systemctl start ceph-osd@${OSD_ID}.service

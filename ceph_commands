@@ -82,7 +82,7 @@ ceph tell osd.0 injectargs --debug-osd 20 --debug-ms 1
 
 http://docs.ceph.com/docs/master/rados/operations/crush-map/#warning-when-tunables-are-non-optimal
 
-# if tunables are not optimal, ceph will complain ...
+# if tunables are not optimal, ceph will complain ... requires at least kernel 4.x !
 ceph osd crush tunables optimal
 ceph osd crush tunables legacy
 

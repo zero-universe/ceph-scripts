@@ -10,7 +10,7 @@ set -o noglob
 
 if [ $# -ne 4 ]; then
 	echo "Usage: $0 <cluster_name> <fs_name> <metadata> <data>" 
-	echo "Example: $0 ceph-test sdc /mnt/sdb"
+	echo "Example: $0 ceph-test fancy-name-for-fs pool_metadata pool_data"
 	exit 1
 fi
 
