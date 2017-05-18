@@ -27,6 +27,7 @@ echo "desired pg_num"
 read PG_NUM
 
 echo "whats the name of your erasure profile"
+ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile ls
 read EPNAME
 
 # add pool
