@@ -21,7 +21,6 @@ LMON=$(hostname -s)
 
 CPWD="/etc/ceph"
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 CMUNITF="ceph-mds@.service"
 UNITDIR="/usr/lib/systemd/system/"
@@ -36,7 +35,7 @@ ceph-authtool --create-keyring /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
 
 
 # import keyring and set caps
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} auth add mds.${LMON} osd "allow rwx" mds "allow" mon "allow profile mds" -i /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
+ceph --cluster ${CLUSTER_NAME} auth add mds.${LMON} osd "allow rwx" mds "allow" mon "allow profile mds" -i /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}/keyring
 
 
 # add to config

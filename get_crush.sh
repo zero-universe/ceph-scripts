@@ -28,7 +28,7 @@ echo "getting crushmap and decompiling it ..."
 
 #${SUDO} ${CEPH} --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd getcrushmap -o ${CRUSHMAP}
 #${SUDO} ${CRT} -d ${CRUSHMAP} -o ${CRUSHMAP}_decompiled
-${CEPH} --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd getcrushmap -o ${CRUSHMAP}
+${CEPH} --cluster ${CLUSTER_NAME} osd getcrushmap -o ${CRUSHMAP}
 ${CRT} -d ${CRUSHMAP} -o ${CRUSHMAP}_decompiled
 
 

@@ -22,15 +22,15 @@ CGROUP=ceph
 CPWD="/etc/ceph"
 cd ${CPWD}
 
+CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
+MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
+
 CLUSTER_NAME=$1
 
 #DATAPART=$2
 CDISK=$2
 
 JOURNALPOINT=$3
-
-CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 # IDs
 OSD_UID=$(uuidgen)
@@ -72,13 +72,13 @@ mount -a
 chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 # create keyring
-ceph-osd --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
+ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
 
 # add osd to cluster
 ceph -c ${CLUSTER_CONF} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
 
 # set weight to 1.0
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd crush add osd.${OSD_ID} 1.0 host=${LMON}
+ceph --cluster ${CLUSTER_NAME} osd crush add osd.${OSD_ID} 1.0 host=${LMON}
 
 systemctl enable ceph-osd@${OSD_ID}.service
 systemctl start ceph-osd@${OSD_ID}.service

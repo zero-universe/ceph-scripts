@@ -13,6 +13,7 @@ ceph -s
 
 # health
 ceph -w
+ceph health
 
 
 #  If you do not want CRUSH to automatically rebalance the cluster as you stop OSDs for maintenance, set the cluster to noout first
@@ -45,7 +46,7 @@ ceph mon dump
 ceph osd tree
 
 
-# lsit crush rule
+# list crush rule
 ceph osd crush rule list -f json-pretty
 ceph osd crush rule ls -f json-pretty
 
@@ -92,3 +93,17 @@ ceph osd crush tunables legacy
 # remove host from bucket
 # ceph osd crush remove {bucket-name}
 ceph --cluster ceph-test -c /etc/ceph/ceph-test.conf osd crush remove $(hostname -s)
+
+
+
+# list all "users"
+ceph auth list
+
+
+# get "user" caps
+ceph auth get client.admin
+
+
+# list erasure profiles
+ceph osd erasure-code-profile ls
+

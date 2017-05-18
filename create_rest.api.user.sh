@@ -29,7 +29,7 @@ echo "keyring = /etc/ceph/${CLUSTER_NAME}.client.restapi.keyring" >> ${CLUSTER_C
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
 # create client.restapi
-${CEPH} auth get-or-create client.restapi mds 'allow' osd 'allow *' mon 'allow *' >> /etc/ceph/${CLUSTER_NAME}.client.restapi.keyring
+${CEPH} --cluser ${CLUSTER_NAME} auth get-or-create client.restapi mds 'allow' osd 'allow *' mon 'allow *' >> /etc/ceph/${CLUSTER_NAME}.client.restapi.keyring
 
 
 exit 0

@@ -30,7 +30,7 @@ echo "compiling crushmap and setting it ..."
 #${SUDO} ${CRT} -c ${CRUSHMAP} -o ${CRUSHMAP}_compiled
 #${SUDO} ${CEPH} --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd setcrushmap -i ${CRUSHMAP}_compiled
 ${CRT} -c ${CRUSHMAP} -o ${CRUSHMAP}_compiled
-${CEPH} --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd setcrushmap -i ${CRUSHMAP}_compiled
+${CEPH} --cluster ${CLUSTER_NAME} osd setcrushmap -i ${CRUSHMAP}_compiled
 
 
 echo "set compiled crushmap"

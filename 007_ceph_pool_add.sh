@@ -2,6 +2,7 @@
 
 # read http://docs.ceph.com/docs/master/install/manual-deployment/ for better understanding
 
+
 set -o nounset
 set -o errexit
 set -o noclobber
@@ -20,27 +21,27 @@ POOL_NAME=$2
 
 CPWD="/etc/ceph"
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 
-# find out pg_num
+## find out pg_num
+echo "take a look at this page: http://ceph.com/pgcalc/"
+#echo "PG_NUM = (Total_number_of_OSD * 100) / max_replication_count"
+##echo "PGP_NUM = (Total_number_of_OSD * 100) / max_replication_count / all_pools"
+#echo ""
+#echo "How many osds do you have?"
+#read OSD_NUM
+#echo ""
+#echo "How many replica do you have?"
+#read REPLICA_NUM
+#echo ""
+##echo "How many pools do you have?"
+##read POOL_NUM
 
-echo "PG_NUM = (Total_number_of_OSD * 100) / max_replication_count"
-#echo "PGP_NUM = (Total_number_of_OSD * 100) / max_replication_count / all_pools"
-echo ""
-echo "How many osds do you have?"
-read OSD_NUM
-echo ""
-echo "How many replica do you have?"
-read REPLICA_NUM
-echo ""
-#echo "How many pools do you have?"
-#read POOL_NUM
-
-echo $((${OSD_NUM} * 100 / ${REPLICA_NUM}))
-echo "now round it up to the next power of 2 - what is it:"
+#echo $((${OSD_NUM} * 100 / ${REPLICA_NUM}))
+#echo "now round it up to the next power of 2 - what is it:"
+echo "enter desired pg_num"
 read PG_NUM
-# in my usecase there is only one pool, so pg_num and pgp_num are identical!
+## in my usecase there is only one pool, so pg_num and pgp_num are identical!
 
 # if you have more than one pool this is how you calculate pgp_num
 # echo "How many pools will you have?"
@@ -50,12 +51,12 @@ read PG_NUM
 
 
 # add pool
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd pool create ${POOL_NAME} ${PG_NUM} ${PG_NUM} replicated
+ceph --cluster ${CLUSTER_NAME} osd pool create ${POOL_NAME} ${PG_NUM} ${PG_NUM} replicated
 # ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd pool create ${POOL_NAME} ${PG_NUM} ${PGP_NUM} replicated
 
 
 # list pools
-ceph --cluster ${CLUSTER_NAME} -c ${CLUSTER_CONF} osd lspools -f json-pretty
+ceph --cluster ${CLUSTER_NAME} osd lspools -f json-pretty
 
 
 

@@ -21,12 +21,9 @@ LMON=$(hostname -s)
 CPWD="/etc/ceph"
 cd ${CPWD}
 
-#echo "what's the cluster's name: "
-#read CLUSTER_NAME
 CLUSTER_NAME=$1
 
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 #echo "which osd should be removed ?"
 #read OSD_ID

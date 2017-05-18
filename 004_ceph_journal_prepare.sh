@@ -16,12 +16,6 @@ CLUSTER_NAME=$1
 CDISK=$2
 MOUNTPOINT=$3
 
-# go to ceph config dir
-CPWD="/etc/ceph"
-cd ${CPWD}
-
-CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 # create mount point
 mkdir -p ${MOUNTPOINT}
