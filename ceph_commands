@@ -107,3 +107,16 @@ ceph auth get client.admin
 # list erasure profiles
 ceph osd erasure-code-profile ls
 
+
+# import user
+#The ceph storage cluster will add new users, their keys and their capabilities and will update existing users, their keys and their capabilities. 
+ceph auth import -i /etc/ceph/ceph.keyring
+
+
+# update client caps
+ceph -c /etc/ceph/cephblocka01.conf auth caps client.pkgrepo mon 'allow r' mds 'allow' osd 'allow rwx pool=sftp_data'
+
+
+# client caps
+ceph auth get-or-create client.foo mon 'allow r' mds 'allow r, allow rw path=/mnt/' osd 'allow rw pool=sftp_data'
+ceph auth get-or-create client.foo mon 'allow r' mds 'allow r' osd 'allow rw pool=sftp_data'
