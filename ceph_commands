@@ -125,5 +125,11 @@ ceph auth get-or-create client.foo mon 'allow r' mds 'allow r' osd 'allow rw poo
 # ceph mds performance infos
 ceph daemon mds.cephconf01fra perf dump mds
 
+
 # after upgrade
 ceph osd require-osd-release luminous
+
+
+# set min version of clients
+# jewel,kraken
+ceph  osd set-require-min-compat-client luminous --yes-i-really-mean-it
