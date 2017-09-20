@@ -133,3 +133,8 @@ ceph osd require-osd-release luminous
 # set min version of clients
 # jewel,kraken
 ceph  osd set-require-min-compat-client luminous --yes-i-really-mean-it
+
+# enable multimds
+# 1st set the flag | 2nd set two active mds
+ceph fs set FSNAME allow_multimds true
+ceph fs set FSNAME max_mds 2
