@@ -20,7 +20,7 @@ ceph --cluster ${CLUSTER_NAME} auth list
 echo "which entity should be deleted:"
 read ENTITY
 
-ceph --clsuter ${CLUSTER_NAME} auth del ${ENTITY} 
+ceph --cluster ${CLUSTER_NAME} auth del ${ENTITY} 
 
 echo "${ENTITY} has been created:"
 

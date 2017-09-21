@@ -23,16 +23,19 @@ mkdir -p ${MOUNTPOINT}
 # prepare hdd
 sgdisk -z /dev/${CDISK}
 sleep 1
-parted /dev/${CDISK} --script -- mklabel gpt
+parted /dev/${CDISK} -s -a optimal -- mklabel gpt
 sleep 1
-#parted /dev/${CDISK} --script -- mkpart primary xfs 0 -1
-parted /dev/${CDISK} --script -- mkpart primary xfs 0% 100%
+#parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0 -1
+parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0% 100%
 sleep 1
-parted /dev/${CDISK} --script -- name 1 journal-for-${CLUSTER_NAME}-${CDISK}
+parted /dev/${CDISK} -s -a optimal -- name 1 journal-for-${CLUSTER_NAME}-${CDISK}
 sleep 1
 
 # format and mount hdd
 mkfs.xfs -f -L "jon${CDISK}" /dev/${CDISK}1
+
+# create ${MOUNTPOINT}
+mkdir -p ${MOUNTPOINT}
 
 # put it into fstab
 echo "# /dev/${CDISK}" >> /etc/fstab
