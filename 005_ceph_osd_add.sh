@@ -57,7 +57,7 @@ mkfs.xfs -f -L "osd${OSD_ID}" /dev/${CDISK}1
 
 # put it into fstab
 #echo "/dev/${CDISK}1	/var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
-echo "# /dev/${CDISK}" >> /etc/fstab
+echo "# /dev/${CDISK} on ${CLUSTER_NAME}-${OSD_ID}" >> /etc/fstab
 echo "UUID=$(blkid /dev/${CDISK}1 | grep UUID | cut -d '"' -f4) /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
 echo -n -e "\n" >> /etc/fstab
 

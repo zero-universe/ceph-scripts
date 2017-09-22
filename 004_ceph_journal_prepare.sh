@@ -16,20 +16,23 @@ CLUSTER_NAME=$1
 CDISK=$2
 MOUNTPOINT=$3
 
+PARTPROBE=$(which partprobe)
 
 # create mount point
 mkdir -p ${MOUNTPOINT}
 
 # prepare hdd
-sgdisk -z /dev/${CDISK}
-sleep 1
+sgdisk -Z /dev/${CDISK}
+${PARTPROBE} /dev/${CDISK}
+sleep 2
 parted /dev/${CDISK} -s -a optimal -- mklabel gpt
 sleep 1
 #parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0 -1
 parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0% 100%
 sleep 1
 parted /dev/${CDISK} -s -a optimal -- name 1 journal-for-${CLUSTER_NAME}-${CDISK}
-sleep 1
+sleep 2
+${PARTPROBE} /dev/${CDISK}
 
 # format and mount hdd
 mkfs.xfs -f -L "jon${CDISK}" /dev/${CDISK}1

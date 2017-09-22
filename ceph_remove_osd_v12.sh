@@ -33,7 +33,7 @@ ceph -c ${CLUSTER_CONF} osd out ${OSD_ID}
 systemctl stop ceph-osd@${OSD_ID}.service
 systemctl disable ceph-osd@${OSD_ID}.service
 
-#umount /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
+umount /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 #btrfs subvolume delete /var/lib/ceph/osd/cephorium-0/*
 

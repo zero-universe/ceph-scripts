@@ -17,6 +17,7 @@ fi
 LMON=$(hostname -s)
 CUSER=ceph
 CGROUP=ceph
+PARTPROBE=$(which partprobe)
 
 CEPHDISK=$(which ceph-disk)
 
@@ -41,27 +42,46 @@ OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create) && echo ${OSD_ID}
 mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 # prepare hdd
-sgdisk -z /dev/${CDISK}
+sgdisk -Z /dev/${CDISK}
+sgdisk -o /dev/${CDISK}
+${PARTPROBE} /dev/${CDISK}
 sleep 1
-parted /dev/${CDISK} -s -a optimal -- mklabel gpt
-sleep 1
-parted  /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0 105MB
-sleep 1
-parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 105MB -1
-sleep 1
-parted /dev/${CDISK} -s -a optimal -- name 1 bluefs-${OSD_ID}
-sleep 1
-parted /dev/${CDISK} -s -a optimal -- name 2 bluestore-${OSD_ID}
-sleep 1
+
+sgdisk -n 1:0:100M /dev/${CDISK}
+sgdisk -n 2 /dev/${CDISK}
+${PARTPROBE} /dev/${CDISK}
+sleep 2
+sgdisk -c 1:bluefs-${OSD_ID}
+sgdisk -c 2:blueblock-${OSD_ID}
+${PARTPROBE} /dev/${CDISK}
+sleep 2
+
+#parted /dev/${CDISK} -s -a optimal -- mklabel gpt
+#sleep 1
+#parted  /dev/${CDISK} -s -a optimal -- mkpart primary xfs 0% 105MB
+#sleep 1
+#parted /dev/${CDISK} -s -a optimal -- mkpart primary xfs 105MB -1
+#sleep 1
+#parted /dev/${CDISK} -s -a optimal -- name 1 bluefs-${OSD_ID}
+#sleep 1
+#parted /dev/${CDISK} -s -a optimal -- name 2 blueblock-${OSD_ID}
+#sleep 1
 
 # format and mount hdd
 mkfs.xfs -f -i size=2048 -L "blueFS${OSD_ID}" /dev/${CDISK}1
+
+#${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --bluestore --block.db ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.db --block.wal ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.wal /dev/${CDISK}
+${PARTPROBE} /dev/${CDISK}
+sleep 5
 
 # put it into fstab
 #echo "/dev/${CDISK}1	/var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
 echo "# /dev/${CDISK}1" >> /etc/fstab
 echo "UUID=$(blkid /dev/${CDISK}1 | grep UUID | cut -d '"' -f4) /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
 echo -n -e "\n" >> /etc/fstab
+
+mount -a
+chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 # append to config
 echo "[osd.${OSD_ID}]" >> ${CLUSTER_CONF}
@@ -70,24 +90,19 @@ echo "host = ${LMON}" >> ${CLUSTER_CONF}
 echo "bluestore block path = /dev/${CDISK}2" >> ${CLUSTER_CONF}
 echo "bluestore block db path = ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.db" >> ${CLUSTER_CONF}
 echo "bluestore block wal path = ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.wal" >> ${CLUSTER_CONF}
+echo "osd journal = ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
-mount -a
-
-echo "bluestore" >> /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/type 
-ln -sf /dev/${CDISK}2 /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block
-ln -sf ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.db /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.db
-ln -sf ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.wal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.wal
-
-chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
+echo "bluestore" > /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/type 
+#ln -sf /dev/${CDISK}2 /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block
+#ln -sf ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.db /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.db
+#ln -sf ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.wal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.wal
 
 # create keyring
 ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
 
 # add osd to cluster
-ceph --cluster ${CLUSTER_NAME} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
-
-chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
+ceph --cluster ${CLUSTER_NAME} auth add osd.${OSD_ID} osd 'allow *' mon 'allow rwx' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
 
 # set weight to 1.0
 ceph --cluster ${CLUSTER_NAME} osd crush add osd.${OSD_ID} 1.0 host=${LMON}
