@@ -134,7 +134,40 @@ ceph osd require-osd-release luminous
 # jewel,kraken
 ceph  osd set-require-min-compat-client luminous --yes-i-really-mean-it
 
+
 # enable multimds
 # 1st set the flag | 2nd set two active mds
 ceph fs set FSNAME allow_multimds true
 ceph fs set FSNAME max_mds 2
+
+
+#mounting raw bluestore osds
+ceph-objectstore-tool --op fuse --data-path /var/lib/ceph/osd/OSDNR--mountpount /mnt/foo
+
+
+# memory usage of osds
+ceph --cluster cephblocka01 daemon osd.6 dump_mempools
+
+
+# block- or filestore ?
+ceph --cluster cephblocka01 osd metadata $OSID | grep osd_objectstore
+
+
+#current count of filestore vs bluestore
+ceph --cluster cephblocka01 osd count-metadata osd_objectstore
+
+
+
+
+
+[global]
+client cache size = 81920
+
+
+[osd]
+#osd op threads = 2
+osd journal size = 4GB
+bluestore cache size ssd = 33GB
+bluestore fsck on mount = true
+bluestore block db size = 31GB
+bluestore block wal size = 536870912
