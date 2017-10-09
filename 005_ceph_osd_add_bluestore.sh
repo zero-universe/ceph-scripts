@@ -32,6 +32,18 @@ JOURNALPOINT=$3
 CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
 MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
+#journal uuid
+JUUID=$(uuidgen)
+
+# block uuid
+BUUID=$(uuidgen)
+
+# blockdb uuid
+BDBUUID=$(uuidgen)
+
+#block.wal uuid
+BWUUID=$(uuidgen)
+
 # IDs
 OSD_UID=$(uuidgen)
 CLUSTER_FSID=$(grep fsid ${CLUSTER_CONF} | cut -d " " -f3)
@@ -100,7 +112,7 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 # create keyring
 #ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --osd-uuid ${OSD_UID} --osd-journal ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal --mkfs --mkkey
 #ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --osd-uuid ${OSD_UID} --osd-journal ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal --mkfs --mkkey
-ceph-osd -c ${CLUSTER_CONF} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkjournal --osd-journal ${JOURNALPOINT}/journal-for-${OSD_ID}.journal --mkfs --mkkey
+ceph-osd -c ${CLUSTER_CONF} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkjournal --osd-journal ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal --mkfs --mkkey
 #ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
 #ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkjournal
 
@@ -114,9 +126,9 @@ else
 fi
 
 #ln -sf /dev/${CDISK}2 /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block
-ln -sf ${JOURNALPOINT}/blockdb-for-${OSD_ID}.db /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.db
-ln -sf ${JOURNALPOINT}/blockwal-for-${OSD_ID}.wal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.wal
-ln -sf ${JOURNALPOINT}/journal-for-${OSD_ID}.journal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/journal
+ln -sf ${JOURNALPOINT}/blockdb-for-osd${OSD_ID}.db /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.db
+ln -sf ${JOURNALPOINT}/blockwal-for-osd${OSD_ID}.wal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/block.wal
+ln -sf ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/journal
 
 # add osd to cluster
 ceph --cluster ${CLUSTER_NAME} auth add osd.${OSD_ID} osd 'allow *' mon 'allow rwx' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring

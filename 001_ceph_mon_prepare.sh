@@ -59,7 +59,7 @@ echo "auth cluster required = cephx" >> ${CLUSTER_CONF}
 echo "auth service required = cephx" >> ${CLUSTER_CONF}
 echo "auth client required = cephx" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
-echo "osd journal size = 1024" >> ${CLUSTER_CONF}
+echo "osd journal size = 4096" >> ${CLUSTER_CONF}
 echo "osd pool default size = 2" >> ${CLUSTER_CONF}
 echo "osd pool default min size = 1" >> ${CLUSTER_CONF}
 echo "osd pool default pg num = 1024" >> ${CLUSTER_CONF}
