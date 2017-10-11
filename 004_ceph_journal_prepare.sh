@@ -23,6 +23,7 @@ mkdir -p ${MOUNTPOINT}
 
 # prepare hdd
 sgdisk -Z /dev/${CDISK}
+sgdisk -o /dev/${CDISK}
 ${PARTPROBE} /dev/${CDISK}
 sleep 2
 parted /dev/${CDISK} -s -a optimal -- mklabel gpt

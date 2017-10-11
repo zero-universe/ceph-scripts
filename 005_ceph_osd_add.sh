@@ -18,12 +18,8 @@ LMON=$(hostname -s)
 CUSER=ceph
 CGROUP=ceph
 
-# go to ceph config dir
-CPWD="/etc/ceph"
-cd ${CPWD}
-
-CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
-MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
+PARTPROBE=$(which partprobe)
+sgdisk=$(which ${SGDISK})
 
 CLUSTER_NAME=$1
 
@@ -31,6 +27,13 @@ CLUSTER_NAME=$1
 CDISK=$2
 
 JOURNALPOINT=$3
+
+# go to ceph config dir
+CPWD="/etc/ceph"
+cd ${CPWD}
+
+CLUSTER_CONF="${CPWD}/${CLUSTER_NAME}.conf"
+MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 
 # IDs
 OSD_UID=$(uuidgen)
@@ -41,14 +44,16 @@ OSD_ID=$(ceph -c ${CLUSTER_CONF} --cluster ${CLUSTER_NAME} osd create) && echo $
 # Create the default directories
 mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
+dd if=/dev/urandom of=${CDISK} bs=20M count=10
+
 # prepare hdd
-sgdisk -Z /dev/${CDISK}
-sgdisk -o /dev/${CDISK}
+${SGDISK} -Z /dev/${CDISK}
+${SGDISK} -o /dev/${CDISK}
 ${PARTPROBE} -s /dev/${CDISK}
 sleep 2
-sgdisk -n 1:0:0 /dev/${CDISK}
+${SGDISK} -n 1:0:0 /dev/${CDISK}
 ${PARTPROBE} /dev/${CDISK}
-sgdisk -c 1:data-for-${CLUSTER_NAME}-${OSD_ID}
+${SGDISK} -c 1:data-for-${CLUSTER_NAME}-osd${OSD_ID}
 ${PARTPROBE} -s /dev/${CDISK}
 
 #sleep 1
@@ -65,7 +70,7 @@ mkfs.xfs -f -L "osd${OSD_ID}" /dev/${CDISK}1
 
 # put it into fstab
 #echo "/dev/${CDISK}1	/var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
-echo "# /dev/${CDISK} on ${CLUSTER_NAME}-${OSD_ID}" >> /etc/fstab
+echo "# /dev/${CDISK} on ${CLUSTER_NAME}-osd${OSD_ID}" >> /etc/fstab
 echo "UUID=$(blkid /dev/${CDISK}1 | grep UUID | cut -d '"' -f4) /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}        xfs     rw,noexec,nodev,noatime   0 0" >> /etc/fstab
 echo -n -e "\n" >> /etc/fstab
 
@@ -73,14 +78,14 @@ echo -n -e "\n" >> /etc/fstab
 echo "[osd.${OSD_ID}]" >> ${CLUSTER_CONF}
 echo "host = ${LMON}" >> ${CLUSTER_CONF}
 echo "osd data = /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}" >> ${CLUSTER_CONF}
-echo "osd journal = ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal" >> ${CLUSTER_CONF}
+echo "osd journal = ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
 mount -a
 chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
 # create keyring
-ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey
+ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey --mkjournal --osd-journal ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal
 
 # add osd to cluster
 ceph -c ${CLUSTER_CONF} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring

@@ -65,6 +65,7 @@ echo "osd pool default min size = 1" >> ${CLUSTER_CONF}
 echo "osd pool default pg num = 1024" >> ${CLUSTER_CONF}
 echo "osd pool default pgp num = 1024" >> ${CLUSTER_CONF}
 echo "osd crush chooseleaf type = 1" >> ${CLUSTER_CONF}
+echo "mds cache size = 900000" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
 

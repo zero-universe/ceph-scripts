@@ -54,6 +54,8 @@ OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create ${OSD_UID}) && echo ${OSD_ID}
 # Create the default directories
 mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 
+dd if=/dev/urandom of=${CDISK} bs=20M count=10
+
 # prepare hdd
 sgdisk -Z /dev/${CDISK}
 sgdisk -o /dev/${CDISK}

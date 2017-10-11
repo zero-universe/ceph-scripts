@@ -51,8 +51,8 @@ BWUUID=$(uuidgen)
 OSD_UID=$(uuidgen)
 CLUSTER_FSID=$(grep fsid ${CLUSTER_CONF} | cut -d " " -f3)
 echo ${CLUSTER_FSID}
-#OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create) && echo ${OSD_ID}
-OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create ${OSD_UID}) && echo ${OSD_ID} ${OSD_UID}
+OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create) && echo ${OSD_ID}
+#OSD_ID=$(ceph --cluster ${CLUSTER_NAME} osd create ${OSD_UID}) && echo ${OSD_ID} ${OSD_UID}
 
 # Create the default directories
 mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
@@ -70,6 +70,7 @@ mkdir -p /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
 #${PARTPROBE} /dev/${CDISK}
 #sleep 2
 
+dd if=/dev/urandom of=${CDISK} bs=20M count=10
 
 # format and mount hdd
 #mkfs.xfs -f -i size=2048 -L "blueFS${OSD_ID}" /dev/${CDISK}1
@@ -81,7 +82,12 @@ ${PARTPROBE} /dev/${CDISK}
 sleep 2
 #${CEPHDISK} prepare --bluestore --block.db-file ${BLOCKDBPOINT}/${CLUSTER_NAME}-${OSD_ID}.db --block.wal-file ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.wal --osd-id ${OSD_ID} -osd-uuid ${OSD_UID} --journal-file ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal /dev/${CDISK}
 # --journal-file ${JOURNALPOINT}/journal-for-${OSD_ID}.journal --journal-uuid ${JUUID}
-${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --no-locking --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db --block.db-uuid ${BDBUUID} --block.wal ${WALPOINT}/blockwal-for-${OSD_ID}.wal --block.wal-uuid ${BWUUID} --osd-id ${OSD_ID} --osd-uuid ${OSD_UID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} --block-uuid ${BUUID} /dev/${CDISK}
+
+# blockdb wal an journal on 3 devices
+#${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --no-locking --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db --block.db-uuid ${BDBUUID} --block.wal ${WALPOINT}/blockwal-for-${OSD_ID}.wal --block.wal-uuid ${BWUUID} --osd-id ${OSD_ID} --osd-uuid ${OSD_UID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} --block-uuid ${BUUID} /dev/${CDISK}
+
+# only wal and journal -> no block!
+${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db --osd-id ${OSD_ID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} /dev/${CDISK}
 #${CEPHDISK} prepare --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${CDISK}.db --block.wal ${JOURNALPOINT}/wal-for-${CDISK}.wal /dev/${CDISK}
 sleep 2
 ${PARTPROBE} /dev/${CDISK}
@@ -105,10 +111,10 @@ echo "[osd.${OSD_ID}]" >> ${CLUSTER_CONF}
 echo "host = ${LMON}" >> ${CLUSTER_CONF}
 echo "osd data = /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}" >> ${CLUSTER_CONF}
 #echo "bluestore block path = /dev/disk/by-partuuid/$(blkid /dev/${CDISK}2 | grep PARTUUID | cut -d '"' -f2)" >> ${CLUSTER_CONF}
-echo "bluestore block path = /dev/disk/by-partuuid/$(blkid /dev/${CDISK}2 | grep PARTUUID | cut -d '"' -f4)" >> ${CLUSTER_CONF}
-echo "bluestore block db path = ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db" >> ${CLUSTER_CONF}
-echo "bluestore block wal path = ${WALPOINT}/blockwal-for-${OSD_ID}.wal" >> ${CLUSTER_CONF}
-echo "osd journal = ${JOURNALPOINT}/journal-for-${OSD_ID}.journal" >> ${CLUSTER_CONF}
+#echo "bluestore block path = /dev/disk/by-partuuid/$(blkid /dev/${CDISK}2 | grep PARTUUID | cut -d '"' -f4)" >> ${CLUSTER_CONF}
+#echo "bluestore block db path = ${BLOCKDBPOINT}/blockdb-for-osd${OSD_ID}.db" >> ${CLUSTER_CONF}
+echo "bluestore block wal path = ${WALPOINT}/blockwal-for-osd${OSD_ID}.wal" >> ${CLUSTER_CONF}
+echo "osd journal = ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal" >> ${CLUSTER_CONF}
 echo -n -e "\n" >> ${CLUSTER_CONF}
 
 
