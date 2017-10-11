@@ -87,7 +87,7 @@ sleep 2
 #${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --no-locking --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db --block.db-uuid ${BDBUUID} --block.wal ${WALPOINT}/blockwal-for-${OSD_ID}.wal --block.wal-uuid ${BWUUID} --osd-id ${OSD_ID} --osd-uuid ${OSD_UID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} --block-uuid ${BUUID} /dev/${CDISK}
 
 # only wal and journal -> no block!
-${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${OSD_ID}.db --osd-id ${OSD_ID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} /dev/${CDISK}
+${CEPHDISK} prepare --cluster ${CLUSTER_NAME} --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-osd${OSD_ID}.db --osd-id ${OSD_ID} --prepare-key /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID} /dev/${CDISK}
 #${CEPHDISK} prepare --bluestore --block.db ${BLOCKDBPOINT}/blockdb-for-${CDISK}.db --block.wal ${JOURNALPOINT}/wal-for-${CDISK}.wal /dev/${CDISK}
 sleep 2
 ${PARTPROBE} /dev/${CDISK}
@@ -132,6 +132,12 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 #ln -sf ${JOURNALPOINT}/${CLUSTER_NAME}-${OSD_ID}.journal /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/journal
 
 chown -R ceph. /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}
+
+# create keyring
+ceph-osd --cluster ${CLUSTER_NAME} --setuser ceph --setgroup ceph -i ${OSD_ID} --mkfs --mkkey --mkjournal --osd-journal ${JOURNALPOINT}/journal-for-osd${OSD_ID}.journal
+
+# add osd to cluster
+ceph -c ${CLUSTER_CONF} auth add osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/${CLUSTER_NAME}-${OSD_ID}/keyring
 
 #systemctl start ceph-osd@${OSD_ID}.service
 
