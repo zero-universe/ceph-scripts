@@ -157,17 +157,24 @@ ceph --cluster cephblocka01 osd metadata $OSID | grep osd_objectstore
 ceph --cluster cephblocka01 osd count-metadata osd_objectstore
 
 
+# activate dashboard
+ceph mgr module enable dashboard
+
+
+# set server and ip
+ceph config-key set mgr/dashboard/$name/server_addr $IP
+ceph config-key set mgr/dashboard/$name/server_port $PORT
+ceph config-key set mgr/dashboard/server_addr $IP
+ceph config-key set mgr/dashboard/server_port $PORT
 
 
 
-[global]
-client cache size = 81920
+# osd pool size
 
+$ceph osd pool get <pool-name> size   -->> it will prompt the " osd_pool_default_size "
+$ceph osd pool get <pool-name> min_size    -->> it will prompt the " osd_pool_default_min_size "
 
-[osd]
-#osd op threads = 2
-osd journal size = 4GB
-bluestore cache size ssd = 33GB
-bluestore fsck on mount = true
-bluestore block db size = 31GB
-bluestore block wal size = 536870912
+if you want to change in runtime, trigger below command
+
+$ceph osd pool set <pool-name> size <value>
+$ceph osd pool set <pool-name> min_size <value>
