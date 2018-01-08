@@ -38,7 +38,7 @@ UNITDIR="/usr/lib/systemd/system/"
 
 
 # copy unit-files and replace clustername
-sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${COUNITF} 
+#sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${COUNITF} 
 #sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CKUNITF}
 
 systemctl daemon-reload

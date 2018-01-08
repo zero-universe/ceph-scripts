@@ -49,7 +49,7 @@ chown -R ceph. /var/lib/ceph/mds/${CLUSTER_NAME}-${LMON}
 
 
 # copy unit-files and replace clustername
-sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
+#sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
 
 systemctl daemon-reload
 
