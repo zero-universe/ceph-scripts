@@ -159,7 +159,8 @@ ceph --cluster cephblocka01 osd count-metadata osd_objectstore
 
 # activate dashboard
 ceph mgr module enable dashboard
-
+ceph config-key set mgr/dashboard/$name/server_addr $IP
+ceph config-key set mgr/dashboard/$name/server_port $PORT
 
 # set server and ip
 ceph config-key set mgr/dashboard/$name/server_addr $IP
