@@ -19,7 +19,11 @@ ceph health
 #  If you do not want CRUSH to automatically rebalance the cluster as you stop OSDs for maintenance, set the cluster to noout first
 #  ( more flags to set: full|pause|noup|nodown|noout|noin|nobackfill|norebalance|norecover|noscrub|nodeep-scrub|notieragent|sortbitwise|require_jewel_osds )
 ceph osd set noout
-ceph osd unset noout
+for i in noout nodown norebalance norecover noscrub;do ceph osd set ${i};done
+for i in noout nodown norebalance norecover noscrub;do ceph osd unset ${i};done
+
+# restarting cluster members
+for i in noout 
  
 
 # list pools
@@ -140,6 +144,9 @@ ceph  osd set-require-min-compat-client luminous --yes-i-really-mean-it
 ceph fs set FSNAME allow_multimds true
 ceph fs set FSNAME max_mds 2
 
+# deactivate ceph mds
+# ceph mds deactivate CEPHFS:RANK
+ceph mds deactivate cephdata:1
 
 #mounting raw bluestore osds
 ceph-objectstore-tool --op fuse --data-path /var/lib/ceph/osd/OSDNR--mountpount /mnt/foo
