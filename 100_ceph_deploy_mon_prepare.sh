@@ -41,7 +41,9 @@ ${CEPHDEPLOY} mon create-initial
 # copy the configuration file and admin key to your admin node and your Ceph Nodes
 echo "what are your ceph nodes?"
 read CNODES
+${CEPHDEPLOY} gatherkeys ${CNODES}
 ${CEPHDEPLOY} admin ${CNODES}
+for i in ${CNODES}; do scp ceph.bootstrap-osd.keyring ${i}:/var/lib/ceph/bootstrap-osd/ceph.keyring;done
 
 # deploy mgr
 echo "where should the mgr be running?"

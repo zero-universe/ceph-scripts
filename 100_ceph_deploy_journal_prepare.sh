@@ -28,8 +28,9 @@ sgdisk -Z /dev/${CDISK}
 # make lvm device
 ${PVCREATE} /dev/${CDISK}
 # create vg
-echo "VG's name?"
-read VGNAME
+# echo "VG's name?"
+# read VGNAME
+VGNAME="journals"
 ${VGCREATE} ${VGNAME}_${CDISK} /dev/${CDISK}
 
 
