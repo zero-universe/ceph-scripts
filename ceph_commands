@@ -81,7 +81,15 @@ ceph tell {daemon-type}.{id or *} injectargs --{name} {value} [--{name} {value}]
 ceph tell osd.0 injectargs --debug-osd 20 --debug-ms 1
 
 
+# Get the Number of Placement Groups
+ceph osd pool get {pool-name} pg_num
 
+# Get the Number of Placement Groups P
+ceph osd pool get {pool-name} pgp_num {pgp_num}
+
+# set pg_num and pgp_num
+ceph osd pool set {pool-name} pg_num {pg_num}
+ceph osd pool set {pool-name} pgp_num {pgp_num}
 
 
 
