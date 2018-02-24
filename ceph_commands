@@ -92,6 +92,10 @@ ceph osd pool set {pool-name} pg_num {pg_num}
 ceph osd pool set {pool-name} pgp_num {pgp_num}
 
 
+# Get Statistics for Stuck PGs
+ceph pg dump_stuck inactive|unclean|stale|undersized|degraded [--format <format>] [<seconds>]
+ceph pg dump_stuck unclean 5
+
 
 http://docs.ceph.com/docs/master/rados/operations/crush-map/#warning-when-tunables-are-non-optimal
 
