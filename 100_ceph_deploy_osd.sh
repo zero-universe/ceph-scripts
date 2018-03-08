@@ -55,7 +55,7 @@ echo
 # echo "where should the block.db be created?"
 # read BLOCKDBVG
 echo
-echo "what's the size of the block.db gonna be? (eg. 3G)"
+echo "what's the size of the block.db gonna be? (eg. 10G)"
 read BLOCKDB_SIZE
 # ${LVCREATE} -L ${BLOCKDB_SIZE} ${BLOCKDBVG} -n blockdb_for_${CDISK}
 ${LVCREATE} -L ${BLOCKDB_SIZE} ${BLOCKWALVG} -n blockdb_for_${CDISK}

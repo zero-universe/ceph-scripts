@@ -19,8 +19,10 @@ ceph health
 #  If you do not want CRUSH to automatically rebalance the cluster as you stop OSDs for maintenance, set the cluster to noout first
 #  ( more flags to set: full|pause|noup|nodown|noout|noin|nobackfill|norebalance|norecover|noscrub|nodeep-scrub|notieragent|sortbitwise|require_jewel_osds )
 ceph osd set noout
-for i in noout nodown norebalance norecover noscrub nodeep-scrub ;do ceph osd set ${i};done
-for i in noout nodown norebalance norecover noscrub nodeep-scrub ;do ceph osd unset ${i};done
+for i in noout nodown norebalance norecover nobackfill pause;do ceph osd set ${i};done
+for i in noout nodown norebalance norecover nobackfill pause;do ceph osd unset ${i};done
+#for i in noout nodown norebalance norecover noscrub nodeep-scrub ;do ceph osd set ${i};done
+#for i in noout nodown norebalance norecover noscrub nodeep-scrub ;do ceph osd unset ${i};done
 
 # restarting cluster members
 for i in noout 
@@ -95,6 +97,9 @@ ceph osd pool set {pool-name} pgp_num {pgp_num}
 # Get Statistics for Stuck PGs
 ceph pg dump_stuck inactive|unclean|stale|undersized|degraded [--format <format>] [<seconds>]
 ceph pg dump_stuck unclean 5
+
+# get pg map
+ceph pg map 8.10a
 
 
 http://docs.ceph.com/docs/master/rados/operations/crush-map/#warning-when-tunables-are-non-optimal
