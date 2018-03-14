@@ -78,9 +78,13 @@ ceph osd df {plain|tree}
 ceph daemon mon.cephconf01fra config show
 
 
+# get config
+ceph --admin-daemon /run/ceph/ceph-osd.0.asok config show | grep 'active'
+
 # inject config
 ceph tell {daemon-type}.{id or *} injectargs --{name} {value} [--{name} {value}]
 ceph tell osd.0 injectargs --debug-osd 20 --debug-ms 1
+ceph tell osd.* injectargs "--osd_recovery_max_active=3"
 
 
 # Get the Number of Placement Groups
