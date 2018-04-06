@@ -29,7 +29,8 @@ read DASK
 echo "value of m"
 read DASM
 
-ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} plugin=jerasure k=${DASK} m=${DASM} technique=reed_sol_van ruleset-failure-domain=host
+#ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} plugin=jerasure k=${DASK} m=${DASM} technique=reed_sol_van ruleset-failure-domain=host
+ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} ${DASK} ${DASM} crush-failure-domain=host crush-device-class=hdd
 #ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} ${DASK} ${DASM} ruleset-failure-domain=rack
 
 #technique={reed_sol_van|reed_sol_r6_op|cauchy_orig|cauchy_good|liberation|blaum_roth|liber8tion}

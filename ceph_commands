@@ -86,6 +86,16 @@ ceph tell {daemon-type}.{id or *} injectargs --{name} {value} [--{name} {value}]
 ceph tell osd.0 injectargs --debug-osd 20 --debug-ms 1
 ceph tell osd.* injectargs "--osd_recovery_max_active=3"
 
+# nearfull ratio
+ceph tell osd.* injectargs "--mon_osd_nearfull_ratio=.93"
+
+# full ratio
+ceph tell osd.* injectargs "--mon_osd_full_ratio=.98"
+
+
+# allow deletion of pools
+ceph tell mon.* injectargs "--mon_allow_pool_delete=true"
+
 
 # Get the Number of Placement Groups
 ceph osd pool get {pool-name} pg_num
@@ -207,3 +217,29 @@ if you want to change in runtime, trigger below command
 
 $ceph osd pool set <pool-name> size <value>
 $ceph osd pool set <pool-name> min_size <value>
+
+
+# set device class
+$ ceph osd crush rm-device-class osd.2 osd.3
+done removing class of osd(s): 2,3
+$ ceph osd crush set-device-class ssd osd.2 osd.3
+
+
+
+# creating erasure coding
+
+1. profile:
+ceph osd erasure-code-profile set ec72profile k=7 m=2 crush-failure-domain=host crush-device-class=hdd
+
+2. create our erasure coded pool
+ceph osd pool create ec72pool 1024 erasure ec72profile
+
+3. Next, we enable overwrites on the new pool (so that it can be used for RBD or CephFS):
+ceph osd pool set ec72pool allow_ec_overwrites true
+
+4. enable pool for cephfs
+ceph osd pool application enable ec72pool cephfs
+
+
+# get erasure profiles
+ceph osd erasure-code-profile ls
