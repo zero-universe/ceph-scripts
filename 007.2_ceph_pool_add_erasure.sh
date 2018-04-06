@@ -32,7 +32,7 @@ read EPNAME
 
 # add pool
 ceph --cluster ${CLUSTER_NAME} osd pool create ${POOL_NAME} ${PG_NUM} ${PG_NUM} erasure ${EPNAME}
-
+#ceph osd pool create ecpool 12 12 erasure default ecruleset
 
 # list pools
 ceph --cluster ${CLUSTER_NAME} osd lspools -f json-pretty

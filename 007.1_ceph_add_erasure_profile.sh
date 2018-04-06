@@ -29,9 +29,16 @@ read DASK
 echo "value of m"
 read DASM
 
+echo "crush-failure-domain: host or osd ?"
+read CFD
+
+echo "crush-device-class: hdd or ssd ?"
+read CDC
+
 #ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} plugin=jerasure k=${DASK} m=${DASM} technique=reed_sol_van ruleset-failure-domain=host
-ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} ${DASK} ${DASM} crush-failure-domain=host crush-device-class=hdd
-#ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} ${DASK} ${DASM} ruleset-failure-domain=rack
+##ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} k=${DASK} m=${DASM} crush-failure-domain=host crush-device-class=hdd
+ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} k=${DASK} m=${DASM} crush-failure-domain=${CFD} plugin=jerasure crush-device-class=${CDC}
+#ceph --cluster ${CLUSTER_NAME} osd erasure-code-profile set ${EPNAME} k=${DASK} m=${DASM} ruleset-failure-domain=rack
 
 #technique={reed_sol_van|reed_sol_r6_op|cauchy_orig|cauchy_good|liberation|blaum_roth|liber8tion}
 
