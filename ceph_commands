@@ -243,3 +243,6 @@ ceph osd pool application enable ec72pool cephfs
 
 # get erasure profiles
 ceph osd erasure-code-profile ls
+
+# set new erasure profile settings DANGEROUS - DO NOT DO THAT - NEVER - REALLY!
+ceph osd erasure-code-profile set default k=2 m=1 --force
