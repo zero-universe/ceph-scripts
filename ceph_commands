@@ -246,3 +246,17 @@ ceph osd erasure-code-profile ls
 
 # set new erasure profile settings DANGEROUS - DO NOT DO THAT - NEVER - REALLY!
 ceph osd erasure-code-profile set default k=2 m=1 --force
+
+
+#For federated configurations, each zone may have a different index_pool setting for failover. To make the value consistent for a zonegroup’s zones,
+#you may set rgw_override_bucket_index_max_shards in a gateway’s zonegroup configuration. For example:
+
+radosgw-admin zonegroup list
+radosgw-admin zonegroup get > zonegroup.json
+
+# Open the zonegroup.json file and edit the bucket_index_max_shards setting for each named zone. Save the zonegroup.json file and reset the zonegroup. For example:
+#radosgw-admin zonegroup set < zonegroup.json
+#Once you have updated your zonegroup, update and commit the period. For example:
+
+radosgw-admin period update --commit
+
