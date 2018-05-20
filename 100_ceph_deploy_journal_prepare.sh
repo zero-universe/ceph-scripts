@@ -19,6 +19,9 @@ PARTED=$(which parted)
 PVCREATE=$(which pvcreate)
 VGCREATE=$(which vgcreate)
 
+# prepare needed directory structure
+mkdir -p /var/lib/ceph/{osd,mon,mgr,mds}
+chown -R ceph. /var/lib/ceph/
 
 # clear gpt structures
 echo "which /dev/DISK should be prepared? (sda or vda)"
@@ -31,7 +34,7 @@ ${PVCREATE} /dev/${CDISK}
 # echo "VG's name?"
 # read VGNAME
 VGNAME="journals"
-${VGCREATE} ${VGNAME}_${CDISK} /dev/${CDISK}
+${VGCREATE} ${VGNAME}_on_${CDISK} /dev/${CDISK}
 
 
 exit 0
