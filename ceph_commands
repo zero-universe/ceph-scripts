@@ -207,6 +207,10 @@ ceph config-key set mgr/dashboard/server_addr $IP
 ceph config-key set mgr/dashboard/server_port $PORT
 
 
+# activate mgr app on pools
+# use 'ceph osd pool application enable <pool-name> <app-name>', where <app-name> is 'cephfs', 'rbd', 'rgw', or freeform for custom applications.
+ceph osd pool application enable default.rgw.buckets.data rgw
+
 
 # osd pool size
 
@@ -260,3 +264,102 @@ radosgw-admin zonegroup get > zonegroup.json
 
 radosgw-admin period update --commit
 
+
+--------------
+# radosgw
+https://ceph.com/planet/using-erasure-coding-with-radosgw/
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+radosgw pools
+
+ceph osd pool create .rgw.root 16 16
+ceph osd pool set .rgw.root size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.control 16 16
+ceph osd pool set default.rgw.control size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.log 16 16
+ceph osd pool set default.rgw.log size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.meta 16 16
+ceph osd pool set default.rgw.meta size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.buckets.index 32 32
+ceph osd pool set default.rgw.buckets.index size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.buckets.non-ec 32 32
+ceph osd pool set default.rgw.buckets.non-ec size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+ceph osd pool create default.rgw.buckets.data 2048 2048
+ceph osd pool set default.rgw.buckets.data size 3
+while [ $(ceph -s | grep creating -c) -gt 0 ]; do echo -n .;sleep 1; done
+
+-------------------------------------------------------------------------------
+
+ceph auth get-or-create client.rgw.$(hostname -s) osd 'allow rwx' mon 'allow rw' -o /var/lib/ceph/radosgw/ceph-$(hostname -s)/keyring
+
+
+radosgw
+
+CREATE A USER
+radosgw-admin user create --uid={username} --display-name="{display-name}" [--email={email}]
+
+
+GET USER INFO
+radosgw-admin user info --uid=johndoe
+
+
+MODIFY USER INFO
+To modify information about a user, you must specify the user ID (--uid={username}) and the attributes you want to modify.
+Typical modifications are to keys and secrets, email addresses, display names and access levels.
+
+For example:
+radosgw-admin user modify --uid=johndoe --display-name="John E. Doe"
+
+
+REMOVE A USER
+radosgw-admin user rm --uid=johndoe
+
+
+ADD / REMOVE A KEY
+Both users and subusers require the key to access the S3 or Swift interface.
+To use S3, the user needs a key pair which is composed of an access key and a secret key.
+On the other hand, to use Swift, the user typically needs a secret key (password),
+and use it together with the associated user ID. You may create a key and either specify
+or generate the access key and/or secret key. You may also remove a key. Options include:
+
+--key-type=<type> specifies the key type. The options are: s3, swift
+--access-key=<key> manually specifies an S3 access key.
+--secret-key=<key> manually specifies a S3 secret key or a Swift secret key.
+--gen-access-key automatically generates a S3 key.
+--gen-secret automatically generates a S3 secret key or a Swift secret key.
+An example how to add a specified S3 key pair for a user.
+
+radosgw-admin key create --uid=foo --key-type=s3 --access-key fooAccessKey --secret-key fooSecretKey
+
+
+ADD / REMOVE ADMIN CAPABILITIES
+radosgw-admin caps add --uid={uid} --caps={caps}
+You can add read, write or all capabilities to users, buckets, metadata and usage (utilization).
+
+For example:
+--caps="[users|buckets|metadata|usage|zone]=[*|read|write|read, write]"
+
+For example:
+radosgw-admin caps add --uid=johndoe --caps="users=*;buckets=*"
+To remove administrative capabilities from a user, execute the following:
+
+radosgw-admin caps rm --uid=johndoe --caps={caps}

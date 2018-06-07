@@ -78,6 +78,8 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 # Create a default data directory (or directories) on the monitor host
 mkdir -p /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}
 mkdir -p /var/lib/ceph/bootstrap-{osd,mon,mgr,mds}
+mkdir -p /var/lib/ceph/{osd,mon,mgr,mds}
+chown -R ceph. /var/lib/ceph
 
 
 # Create a keyring for your cluster and generate a monitor secret key
@@ -103,9 +105,9 @@ ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring ${MON_KEYRIN
 
 # Generate a monitor map using the hostname(s), host IP address(es) and the FSID. Save it as monmap
 #monmaptool  --create  --add  mon.a 192.168.0.10:6789 --add mon.b 192.168.0.11:6789 --add mon.c 192.168.0.12:6789 --clobber monmap
-monmaptool --create --add $(echo $AMON | awk 'BEGIN {FS=","} {print $1}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $1	}'):6789 monmap
-#--add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 \
-#--add $(echo $AMON | awk 'BEGIN {FS=","} {print $3}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $3}'):6789 monmap
+monmaptool --create --add $(echo $AMON | awk 'BEGIN {FS=","} {print $1}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $1	}'):6789 \
+--add $(echo $AMON | awk 'BEGIN {FS=","} {print $2}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $2}'):6789 \
+--add $(echo $AMON | awk 'BEGIN {FS=","} {print $3}') $(echo $AMIP | awk 'BEGIN {FS=","} {print $3}'):6789 monmap
 
 
 # Mark that the monitor is created and ready to be started
@@ -118,7 +120,7 @@ chown -R ceph. /var/lib/ceph
 
 
 # copy unit-files and replace clustername
-sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
+#sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CMUNITF} 
 #sed -i "s/CLUSTER=ceph/CLUSTER=${CLUSTER_NAME}/g" ${UNITDIR}${CKUNITF} 
 
 systemctl daemon-reload
@@ -129,10 +131,10 @@ systemctl enable ceph-mon@${LMON}.service
 
 
 # distribute the keys
-#echo "rsyncing keys"
-#for i in $(echo ${AMON} | tr ',' ' '); do
-	#rsync -a ${CPWD} ${i}:/etc/
-#done	
+echo "rsyncing keys"
+for i in $(echo ${AMON} | tr ',' ' '); do
+	rsync -a ${CPWD} ${i}:/etc/
+done	
 
 
 # append host specific part to config must not be rsynced !

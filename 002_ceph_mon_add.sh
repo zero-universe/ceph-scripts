@@ -27,7 +27,7 @@ MON_KEYRING="${CPWD}/${CLUSTER_NAME}.mon.keyring"
 MONMAP="${CPWD}/monmap"
 
 CMUNITF="ceph-mon@.service"
-CKUNITF="ceph-create-keys@.service"
+#CKUNITF="ceph-create-keys@.service"
 UNITDIR="/usr/lib/systemd/system/"
 MYUNITDIR="/etc/systemd/system/"
 
@@ -35,9 +35,9 @@ MYUNITDIR="/etc/systemd/system/"
 CLUSTER_FSID=$(grep fsid ${CLUSTER_CONF} | cut -d " " -f3)
 echo ${CLUSTER_FSID}
 
-if [ -d /etc/sysconfig ]; then
-	echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
-fi
+#if [ -d /etc/sysconfig ]; then
+#	echo "cluster=${CLUSTER_NAME}" > /etc/sysconfig/ceph
+#fi
 
 
 ### fill config
@@ -50,6 +50,10 @@ echo -n -e "\n" >> ${CLUSTER_CONF}
 
 # Create a default data directory (or directories) on the monitor host
 mkdir -p /var/lib/ceph/mon/${CLUSTER_NAME}-${LMON}
+mkdir -p /var/lib/ceph/bootstrap-{osd,mon,mgr,mds}
+mkdir -p /var/lib/ceph/{osd,mon,mgr,mds}
+chown -R ceph. /var/lib/ceph
+
 
 # create mon keys
 ceph-mon -f --cluster ${CLUSTER_NAME} --id ${LMON} --mkfs --keyring ${MON_KEYRING} --monmap monmap
@@ -70,7 +74,7 @@ chown -R ceph. /var/lib/ceph
 
 systemctl daemon-reload
 
-systemctl restart ceph-create-keys@${LMON}.service
+#systemctl restart ceph-create-keys@${LMON}.service
 systemctl start ceph-mon@${LMON}.service
 systemctl enable ceph-mon@${LMON}.service
 

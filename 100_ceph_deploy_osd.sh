@@ -61,25 +61,26 @@ read BLOCKDB_SIZE
 ${LVCREATE} -L ${BLOCKDB_SIZE} ${BLOCKWALVG} -n blockdb_for_${CDISK}
 echo
 
-# crate journal
-# ${VGS}
-# uncomment for different vgs!
-# echo "where should the journal be created?"
-# read JOURNALVG
-echo
-echo "what's the size of the journal gonna be? (eg. 3G)"
-read JOURNAL_SIZE
-# ${LVCREATE} -L ${JOURNAL_SIZE} ${JOURNALVG} -n journal_for_${CDISK}
-${LVCREATE} -L ${JOURNAL_SIZE} ${BLOCKWALVG} -n journal_for_${CDISK}
-echo
-echo
-# list all lvs
-${LVS}
-echo
+## crate journal
+## ${VGS}
+## uncomment for different vgs!
+## echo "where should the journal be created?"
+## read JOURNALVG
+#echo
+#echo "what's the size of the journal gonna be? (eg. 3G)"
+#read JOURNAL_SIZE
+## ${LVCREATE} -L ${JOURNAL_SIZE} ${JOURNALVG} -n journal_for_${CDISK}
+#${LVCREATE} -L ${JOURNAL_SIZE} ${BLOCKWALVG} -n journal_for_${CDISK}
+#echo
+#echo
+## list all lvs
+#${LVS}
+#echo
 
 # create osd
 # ceph-volume lvm prepare --bluestore --data {vg/lv} --block.wal {device} --block-db {vg/lv}
-${CEPHVOLUME} lvm create --bluestore --data ${VGNAME}_${CDISK}/data_for_${CDISK} --block.wal ${BLOCKWALVG}/blockwal_for_${CDISK} --block.db ${BLOCKWALVG}/blockdb_for_${CDISK} --journal ${BLOCKWALVG}/journal_for_${CDISK}
+#${CEPHVOLUME} lvm create --bluestore --data ${VGNAME}_${CDISK}/data_for_${CDISK} --block.wal ${BLOCKWALVG}/blockwal_for_${CDISK} --block.db ${BLOCKWALVG}/blockdb_for_${CDISK} --journal ${BLOCKWALVG}/journal_for_${CDISK}
+${CEPHVOLUME} lvm create --bluestore --data ${VGNAME}_${CDISK}/data_for_${CDISK} --block.wal ${BLOCKWALVG}/blockwal_for_${CDISK} --block.db ${BLOCKWALVG}/blockdb_for_${CDISK}
 #${CEPHVOLUME} lvm prepare --bluestore --data ${VGNAME}_${CDISK}/data_for_${CDISK} --block.wal ${BLOCKWALVG}/blockwal_for_${CDISK} --block.db ${BLOCKWALVG}/blockdb_for_${CDISK} --journal ${BLOCKWALVG}/journal_for_${CDISK}
 
 exit 0
